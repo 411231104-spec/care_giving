@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, KeyboardAvoidingView,
-  Platform, ActivityIndicator, Alert
+  Platform, ActivityIndicator, Alert, Image
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '../../context/AuthContext'
@@ -43,9 +43,12 @@ export default function LoginScreen({ navigation }) {
 
           {/* Header */}
           <View style={s.header}>
-            <Text style={s.logo}>💞</Text>
-            <Text style={s.appName}>Care-Giver Sync</Text>
-            <Text style={s.appTagline}>Platform Koordinasi Perawatan</Text>
+            <Image
+              source={require('../../../assets/logo.png')}
+              style={s.logoImg}
+              resizeMode="contain"
+            />
+            <Text style={s.appTagline}>we love, we care</Text>
           </View>
 
           {/* Card */}
@@ -137,9 +140,8 @@ const s = StyleSheet.create({
   safeArea:  { flex: 1, backgroundColor: Colors.bgBase },
   scroll:    { flexGrow: 1, padding: Spacing.lg },
   header:    { alignItems: 'center', paddingVertical: Spacing.xl },
-  logo:      { fontSize: 56, marginBottom: Spacing.sm },
-  appName:   { fontSize: FontSize.xxl, fontWeight: '800', color: Colors.textPrimary },
-  appTagline:{ fontSize: FontSize.sm, color: Colors.textMuted, marginTop: 4 },
+  logoImg:    { width: 160, height: 160, marginBottom: Spacing.xs },
+  appTagline: { fontSize: FontSize.sm, color: Colors.textMuted, marginTop: 0, marginBottom: Spacing.sm },
 
   card: {
     backgroundColor: Colors.bgCard,

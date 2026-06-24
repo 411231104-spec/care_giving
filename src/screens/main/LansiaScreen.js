@@ -2,9 +2,10 @@ import React, { useEffect, useState, useCallback } from 'react'
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   TextInput, Modal, ScrollView, Alert, ActivityIndicator,
-  RefreshControl, KeyboardAvoidingView, Platform
+  RefreshControl, KeyboardAvoidingView, Platform, Image
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import * as ImagePicker from 'expo-image-picker'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { Colors, Spacing, Radius, FontSize } from '../../theme/colors'
@@ -13,7 +14,15 @@ function getInitials(name = '') {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'
 }
 
-function Avatar({ name, size = 44 }) {
+function Avatar({ name, photoUri, size = 44 }) {
+  if (photoUri) {
+    return (
+      <Image
+        source={{ uri: photoUri }}
+        style={[s.avatar, { width: size, height: size, borderRadius: size / 2 }]}
+      />
+    )
+  }
   return (
     <View style={[s.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
       <Text style={{ color: 'white', fontWeight: '800', fontSize: size * 0.35 }}>{getInitials(name)}</Text>
@@ -26,7 +35,7 @@ function LansiaCard({ item, onEdit, onDelete, onBooking }) {
   return (
     <View style={s.card}>
       <View style={s.cardHeader}>
-        <Avatar name={item.full_name} size={52} />
+        <Avatar name={item.full_name} photoUri={item.photo_url} size={52} />
         <View style={{ flex: 1, marginLeft: Spacing.sm }}>
           <Text style={s.cardName}>{item.full_name}</Text>
           <Text style={s.cardMeta}>
@@ -65,7 +74,7 @@ function LansiaCard({ item, onEdit, onDelete, onBooking }) {
   )
 }
 
-const EMPTY_FORM = { full_name: '', age: '', gender: '', address: '', medical_notes: '', is_active: true }
+const EMPTY_FORM = { full_name: '', age: '', gender: '', address: '', medical_notes: '', is_active: true, photo_url: null }
 
 export default function LansiaScreen({ navigation }) {
   const { user } = useAuth()
@@ -103,8 +112,25 @@ export default function LansiaScreen({ navigation }) {
   }, [search, data])
 
   function openAdd()    { setEditId(null); setForm(EMPTY_FORM); setModalOpen(true) }
-  function openEdit(l)  { setEditId(l.id); setForm({ full_name: l.full_name, age: String(l.age || ''), gender: l.gender || '', address: l.address || '', medical_notes: l.medical_notes || '', is_active: l.is_active }); setModalOpen(true) }
+  function openEdit(l)  { setEditId(l.id); setForm({ full_name: l.full_name, age: String(l.age || ''), gender: l.gender || '', address: l.address || '', medical_notes: l.medical_notes || '', is_active: l.is_active, photo_url: l.photo_url || null }); setModalOpen(true) }
   function closeModal() { setModalOpen(false) }
+
+  async function pickPhoto() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (status !== 'granted') {
+      Alert.alert('Izin Diperlukan', 'Izin akses galeri diperlukan untuk memilih foto.')
+      return
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    })
+    if (!result.canceled && result.assets[0]) {
+      setForm(p => ({ ...p, photo_url: result.assets[0].uri }))
+    }
+  }
 
   async function handleSave() {
     if (!form.full_name.trim()) return Alert.alert('Perhatian', 'Nama lengkap wajib diisi')
@@ -116,6 +142,7 @@ export default function LansiaScreen({ navigation }) {
       address:       form.address.trim() || null,
       medical_notes: form.medical_notes.trim() || null,
       is_active:     form.is_active,
+      photo_url:     form.photo_url || null,
     }
     try {
       if (editId) {
@@ -204,6 +231,31 @@ export default function LansiaScreen({ navigation }) {
               <TouchableOpacity onPress={closeModal} style={s.closeBtn}><Text style={s.closeText}>✕</Text></TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={{ padding: Spacing.lg }} keyboardShouldPersistTaps="handled">
+
+              {/* Foto Profil Lansia (Opsional) */}
+              <View style={s.inputGroup}>
+                <Text style={s.label}>📷 Foto Lansia (Opsional)</Text>
+                <View style={s.photoPickerWrap}>
+                  {form.photo_url ? (
+                    <Image source={{ uri: form.photo_url }} style={s.photoPreview} />
+                  ) : (
+                    <View style={s.photoPlaceholder}>
+                      <Text style={{ fontSize: 36 }}>👤</Text>
+                      <Text style={{ color: Colors.textMuted, fontSize: FontSize.xs, marginTop: 4 }}>Belum ada foto</Text>
+                    </View>
+                  )}
+                  <View style={s.photoBtns}>
+                    <TouchableOpacity style={s.photoBtn} onPress={pickPhoto} activeOpacity={0.8}>
+                      <Text style={s.photoBtnText}>🖼️ Pilih Foto</Text>
+                    </TouchableOpacity>
+                    {form.photo_url ? (
+                      <TouchableOpacity style={s.photoRemoveBtn} onPress={() => setForm(p => ({ ...p, photo_url: null }))} activeOpacity={0.8}>
+                        <Text style={s.photoRemoveText}>🗑️ Hapus</Text>
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
+                </View>
+              </View>
 
               {[
                 { label: 'Nama Lengkap *', key: 'full_name', placeholder: 'Masukkan nama lengkap', icon: '👤' },
@@ -320,4 +372,12 @@ const s = StyleSheet.create({
   genderText: { fontSize: FontSize.sm, fontWeight: '600', color: Colors.textSecondary },
   saveBtn:    { backgroundColor: Colors.primary, borderRadius: Radius.md, paddingVertical: 15, alignItems: 'center', marginTop: Spacing.md, shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, elevation: 8 },
   saveBtnText:{ color: 'white', fontSize: FontSize.md, fontWeight: '700' },
+  photoPickerWrap: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, backgroundColor: Colors.bgSurface, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border, padding: Spacing.md },
+  photoPreview: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: Colors.primary },
+  photoPlaceholder: { width: 80, height: 80, borderRadius: 40, backgroundColor: Colors.bgHover, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.border },
+  photoBtns: { flex: 1, gap: Spacing.sm },
+  photoBtn: { backgroundColor: Colors.primary, borderRadius: Radius.sm, paddingVertical: 9, paddingHorizontal: 12, alignItems: 'center' },
+  photoBtnText: { color: 'white', fontWeight: '700', fontSize: FontSize.xs },
+  photoRemoveBtn: { backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: Radius.sm, paddingVertical: 9, paddingHorizontal: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)' },
+  photoRemoveText: { color: Colors.danger, fontWeight: '700', fontSize: FontSize.xs },
 })

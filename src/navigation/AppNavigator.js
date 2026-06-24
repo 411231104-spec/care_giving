@@ -2,7 +2,7 @@ import React from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { Text, ActivityIndicator, View } from 'react-native'
+import { Text, ActivityIndicator, View, Image, StyleSheet } from 'react-native'
 
 import { useAuth } from '../context/AuthContext'
 import { Colors } from '../theme/colors'
@@ -71,11 +71,14 @@ export default function AppNavigator() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: Colors.bgBase, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-        <Text style={{ fontSize: 48 }}>💞</Text>
-        <Text style={{ color: Colors.textPrimary, fontSize: 20, fontWeight: '800' }}>Care-Giver Sync</Text>
-        <ActivityIndicator color={Colors.primary} size="large" style={{ marginTop: 16 }} />
-        <Text style={{ color: Colors.textMuted, fontSize: 13 }}>Memeriksa sesi...</Text>
+      <View style={ls.splash}>
+        <Image
+          source={require('../../assets/logo.png')}
+          style={ls.splashLogo}
+          resizeMode="contain"
+        />
+        <Text style={ls.splashTagline}>we love, we care</Text>
+        <ActivityIndicator color="#E91E8C" size="large" style={{ marginTop: 32 }} />
       </View>
     )
   }
@@ -86,3 +89,23 @@ export default function AppNavigator() {
     </NavigationContainer>
   )
 }
+
+const ls = StyleSheet.create({
+  splash: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  splashLogo: {
+    width: 220,
+    height: 220,
+  },
+  splashTagline: {
+    fontSize: 16,
+    color: '#888',
+    marginTop: 4,
+    fontStyle: 'italic',
+    letterSpacing: 0.5,
+  },
+})

@@ -209,9 +209,8 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Zona Bahaya */}
+        {/* Logout */}
         <View style={[s.section, { borderColor: 'rgba(239,68,68,0.25)' }]}>
-          <Text style={[s.sectionTitle, { color: Colors.danger }]}>⚠️ Zona Bahaya</Text>
           <TouchableOpacity style={s.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>
             <Text style={s.logoutText}>🚪 Keluar dari Akun</Text>
           </TouchableOpacity>

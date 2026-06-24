@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, KeyboardAvoidingView,
-  Platform, ActivityIndicator, Alert
+  Platform, ActivityIndicator, Alert, Image
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '../../context/AuthContext'
@@ -71,7 +71,11 @@ export default function RegisterScreen({ navigation }) {
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
 
           <View style={s.header}>
-            <Text style={s.logo}>💞</Text>
+            <Image
+              source={require('../../../assets/logo.png')}
+              style={s.logoImg}
+              resizeMode="contain"
+            />
             <Text style={s.title}>Buat Akun Baru</Text>
             <Text style={s.subtitle}>Bergabung dengan platform perawatan digital</Text>
           </View>
@@ -189,7 +193,7 @@ const s = StyleSheet.create({
   safeArea:  { flex: 1, backgroundColor: Colors.bgBase },
   scroll:    { flexGrow: 1, padding: Spacing.lg },
   header:    { alignItems: 'center', paddingVertical: Spacing.lg },
-  logo:      { fontSize: 44, marginBottom: Spacing.sm },
+  logoImg:    { width: 120, height: 120, marginBottom: Spacing.sm },
   title:     { fontSize: FontSize.xl, fontWeight: '800', color: Colors.textPrimary },
   subtitle:  { fontSize: FontSize.sm, color: Colors.textMuted, marginTop: 4 },
   card: {
